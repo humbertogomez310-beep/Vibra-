@@ -5,18 +5,19 @@ import path from "path";
 const rawPort = process.env.PORT || "5173";
 const port = Number(rawPort);
 
-const basePath = process.env.BASE_PATH || "/";
-
 export default defineConfig({
-  base: basePath,
-  server: {
-    port,
-    host: "0.0.0.0",
-  },
-  plugins: [react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
+base: "/Vibra-/",
+
+server: {
+port,
+host: "0.0.0.0",
+},
+
+plugins: [react()],
+
+resolve: {
+alias: {
+"@": path.resolve(__dirname, "./src"),
+},
+},
 });
