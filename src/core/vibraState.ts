@@ -13,6 +13,13 @@ export interface Song {
   mood: Mood;
   duration: number;
   vibeLevel: number; // 0-100
+
+  // VIBRA PRO
+  fileUrl?: string;
+  album?: string;
+  cover?: string;
+  plays?: number;
+  favorite?: boolean;
 }
 
 export interface VibraState {
@@ -56,8 +63,11 @@ export function setState(updates: Partial<VibraState>): void {
 /**
  * Suscribirse a cambios de estado
  */
-export function subscribe(listener: (newState: VibraState) => void): () => void {
+export function subscribe(
+  listener: (newState: VibraState) => void
+): () => void {
   listeners.push(listener);
+
   return () => {
     listeners = listeners.filter(l => l !== listener);
   };
