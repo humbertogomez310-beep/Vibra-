@@ -1,8 +1,9 @@
-import { Player } from './components/Player';
-import { ControlCenter } from './components/ControlCenter';
-import { MoodPanel } from './components/MoodPanel';
-import { PartyMode } from './components/PartyMode';
-import './ui/styles.css';
+import { Player } from "./components/Player";
+import { ControlCenter } from "./components/ControlCenter";
+import { MoodPanel } from "./components/MoodPanel";
+import { PartyMode } from "./components/PartyMode";
+import { MusicLibrary } from "./components/MusicLibrary";
+import "./ui/styles.css";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <main className="app-content">
         <Player />
         <MoodPanel />
+        <MusicLibrary />
         <ControlCenter />
         <PartyMode />
       </main>
