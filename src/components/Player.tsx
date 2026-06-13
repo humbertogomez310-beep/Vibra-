@@ -60,17 +60,6 @@ export const Player: React.FC = () => {
         >
           {isPlaying ? '⏸️' : '▶️'}
         </button>
-
-        {isPlaying && (
-          <button
-            className="control-btn pause-btn"
-            onClick={handlePause}
-            title="Pausar"
-          >
-            ⏸️
-          </button>
-        )}
-
         <button
           className="control-btn next-btn"
           onClick={handleNext}
