@@ -21,14 +21,9 @@ export const Player: React.FC = () => {
     } else if (currentSong) {
       hbgCore.resume();
     } else {
-      // Reproducir siguiente recomendación
       const song = hbgCore.getNextRecommendation();
       hbgCore.play(song);
     }
-  };
-
-  const handlePause = () => {
-    hbgCore.pause();
   };
 
   const handleNext = () => {
@@ -60,6 +55,7 @@ export const Player: React.FC = () => {
         >
           {isPlaying ? '⏸️' : '▶️'}
         </button>
+
         <button
           className="control-btn next-btn"
           onClick={handleNext}
