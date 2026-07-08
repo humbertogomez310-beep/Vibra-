@@ -5,12 +5,15 @@
 
 import { Song } from './vibraState';
 import { Mood } from './vibraState';
+import { LibraryTrack } from './musicCatalog';
 
 const STORAGE_KEYS = {
   HISTORY: 'vibra_history',
   FAVORITES: 'vibra_favorites',
   PREFERENCES: 'vibra_preferences',
   MOOD_HISTORY: 'vibra_mood_history',
+  LIBRARY_TRACKS: 'vibra_library_tracks',
+  PLAYBACK_INTERACTIONS: 'vibra_playback_interactions',
 };
 
 export interface UserPreferences {
@@ -18,6 +21,16 @@ export interface UserPreferences {
   volume: number;
   darkMode: boolean;
   autoPlayEnabled: boolean;
+}
+
+export type PlaybackInteractionType = 'play' | 'skip' | 'replay';
+
+export interface PlaybackInteraction {
+  songId: string;
+  songTitle: string;
+  type: PlaybackInteractionType;
+  mood: Mood;
+  timestamp: number;
 }
 
 const DEFAULT_PREFERENCES: UserPreferences = {
@@ -28,6 +41,37 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 };
 
 export class MemoryEngine {
+  private getStorage(): Storage | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+
+    try {
+      return window.localStorage;
+    } catch {
+      return null;
+    }
+  }
+
+  private getItem(key: string): string | null {
+    const storage = this.getStorage();
+    return storage ? storage.getItem(key) : null;
+  }
+
+  private setItem(key: string, value: string): void {
+    const storage = this.getStorage();
+    if (storage) {
+      storage.setItem(key, value);
+    }
+  }
+
+  private removeItem(key: string): void {
+    const storage = this.getStorage();
+    if (storage) {
+      storage.removeItem(key);
+    }
+  }
+
   /**
    * Guardar canción en historial
    */
@@ -36,7 +80,7 @@ export class MemoryEngine {
     history.unshift(song);
     // Mantener solo últimas 100 canciones
     const limited = history.slice(0, 100);
-    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(limited));
+    this.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(limited));
   }
 
   /**
@@ -44,7 +88,50 @@ export class MemoryEngine {
    */
   getHistory(): Song[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.HISTORY);
+      const data = this.getItem(STORAGE_KEYS.HISTORY);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Guardar catálogo local de canciones
+   */
+  saveLibraryTracks(tracks: LibraryTrack[]): void {
+    this.setItem(STORAGE_KEYS.LIBRARY_TRACKS, JSON.stringify(tracks));
+  }
+
+  /**
+   * Obtener catálogo local de canciones
+   */
+  getLibraryTracks(): LibraryTrack[] {
+    try {
+      const data = this.getItem(STORAGE_KEYS.LIBRARY_TRACKS);
+      return data ? JSON.parse(data) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  recordPlaybackInteraction(song: Song, type: PlaybackInteractionType): void {
+    const interaction: PlaybackInteraction = {
+      songId: song.id,
+      songTitle: song.title,
+      type,
+      mood: song.mood,
+      timestamp: Date.now(),
+    };
+
+    const interactions = this.getPlaybackInteractions();
+    interactions.unshift(interaction);
+    const limited = interactions.slice(0, 200);
+    this.setItem(STORAGE_KEYS.PLAYBACK_INTERACTIONS, JSON.stringify(limited));
+  }
+
+  getPlaybackInteractions(): PlaybackInteraction[] {
+    try {
+      const data = this.getItem(STORAGE_KEYS.PLAYBACK_INTERACTIONS);
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
@@ -58,7 +145,7 @@ export class MemoryEngine {
     const favorites = this.getFavorites();
     if (!favorites.some(s => s.id === song.id)) {
       favorites.push(song);
-      localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
+      this.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(favorites));
     }
   }
 
@@ -67,7 +154,7 @@ export class MemoryEngine {
    */
   getFavorites(): Song[] {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.FAVORITES);
+      const data = this.getItem(STORAGE_KEYS.FAVORITES);
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
@@ -80,7 +167,7 @@ export class MemoryEngine {
   removeFromFavorites(songId: string): void {
     const favorites = this.getFavorites();
     const filtered = favorites.filter(s => s.id !== songId);
-    localStorage.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(filtered));
+    this.setItem(STORAGE_KEYS.FAVORITES, JSON.stringify(filtered));
   }
 
   /**
@@ -89,7 +176,7 @@ export class MemoryEngine {
   savePreferences(prefs: Partial<UserPreferences>): void {
     const current = this.getPreferences();
     const updated = { ...current, ...prefs };
-    localStorage.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(updated));
+    this.setItem(STORAGE_KEYS.PREFERENCES, JSON.stringify(updated));
   }
 
   /**
@@ -97,7 +184,7 @@ export class MemoryEngine {
    */
   getPreferences(): UserPreferences {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.PREFERENCES);
+      const data = this.getItem(STORAGE_KEYS.PREFERENCES);
       return data ? { ...DEFAULT_PREFERENCES, ...JSON.parse(data) } : DEFAULT_PREFERENCES;
     } catch {
       return DEFAULT_PREFERENCES;
@@ -110,7 +197,7 @@ export class MemoryEngine {
   logMoodChange(mood: Mood, timestamp: number = Date.now()): void {
     const history = this.getMoodHistory();
     history.push({ mood, timestamp });
-    localStorage.setItem(STORAGE_KEYS.MOOD_HISTORY, JSON.stringify(history));
+    this.setItem(STORAGE_KEYS.MOOD_HISTORY, JSON.stringify(history));
   }
 
   /**
@@ -118,7 +205,7 @@ export class MemoryEngine {
    */
   getMoodHistory(): Array<{ mood: Mood; timestamp: number }> {
     try {
-      const data = localStorage.getItem(STORAGE_KEYS.MOOD_HISTORY);
+      const data = this.getItem(STORAGE_KEYS.MOOD_HISTORY);
       return data ? JSON.parse(data) : [];
     } catch {
       return [];
@@ -130,7 +217,7 @@ export class MemoryEngine {
    */
   clearAll(): void {
     Object.values(STORAGE_KEYS).forEach(key => {
-      localStorage.removeItem(key);
+      this.removeItem(key);
     });
   }
 }

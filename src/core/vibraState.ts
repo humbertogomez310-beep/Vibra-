@@ -13,13 +13,20 @@ export interface Song {
   mood: Mood;
   duration: number;
   vibeLevel: number; // 0-100
-
-  // VIBRA PRO
+  audioUrl?: string;
   fileUrl?: string;
   album?: string;
   cover?: string;
   plays?: number;
   favorite?: boolean;
+}
+
+export interface DynamicCollection {
+  id: string;
+  name: string;
+  description: string;
+  criteria: Record<string, unknown>;
+  limit?: number;
 }
 
 export interface VibraState {
@@ -30,6 +37,8 @@ export interface VibraState {
   history: Song[];
   volume: number; // 0-100
   isAutoPlay: boolean;
+  libraryTracks: Song[];
+  dynamicCollections: DynamicCollection[];
 }
 
 const initialState: VibraState = {
@@ -40,6 +49,8 @@ const initialState: VibraState = {
   history: [],
   volume: 75,
   isAutoPlay: false,
+  libraryTracks: [],
+  dynamicCollections: [],
 };
 
 let state = { ...initialState };

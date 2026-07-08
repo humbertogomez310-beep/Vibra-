@@ -5,6 +5,7 @@
  */
 
 import { Mood } from './vibraState';
+import { musicCatalog, type LibraryTrack } from './musicCatalog';
 
 export interface MoodConfig {
   name: string;
@@ -85,14 +86,47 @@ export class MoodEngine {
   /**
    * Obtener recomendación de playlist según mood
    */
+  getCatalogRecommendations(mood: Mood, limit: number = 10): LibraryTrack[] {
+    const moodConfig = this.getMoodConfig(mood);
+    const tempoRange = this.getTempoRange(moodConfig.tempo);
+
+    const matchingTracks = musicCatalog.querySmartPlaylists(
+      {
+        mood,
+        bpmMin: tempoRange.min,
+        bpmMax: tempoRange.max,
+        minPlayCount: 0,
+      },
+      limit,
+    );
+
+    if (matchingTracks.length > 0) {
+      return matchingTracks;
+    }
+
+    return musicCatalog.querySmartPlaylists({ mood }, limit);
+  }
+
   getPlaylistRecommendation(mood: Mood): string[] {
-    // Aquí se pueden añadir recomendaciones más complejas
-    // Por ahora retorna IDs de ejemplo
+    const catalogTracks = this.getCatalogRecommendations(mood, 6);
+
+    if (catalogTracks.length > 0) {
+      return catalogTracks.map((track) => track.id);
+    }
+
     return [
       `${mood}-track-1`,
       `${mood}-track-2`,
       `${mood}-track-3`,
     ];
+  }
+
+  private getTempoRange(tempo: number): { min: number; max: number } {
+    const tolerance = Math.max(12, Math.round(tempo * 0.18));
+    return {
+      min: Math.max(60, tempo - tolerance),
+      max: tempo + tolerance,
+    };
   }
 }
 

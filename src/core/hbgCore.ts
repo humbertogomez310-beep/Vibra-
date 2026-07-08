@@ -91,6 +91,7 @@ export class HBGCore {
       playbackState: 'playing',
     });
     memoryEngine.addToHistory(song);
+    memoryEngine.recordPlaybackInteraction(song, 'play');
 
     console.log(`▶️ Reproduciendo: ${song.title}`);
   }
@@ -117,8 +118,18 @@ export class HBGCore {
    * Siguiente
    */
   next(): void {
-    playerEngine.next();
-    autoDJ.playNext();
+    const currentSong = getState().currentSong;
+    if (currentSong) {
+      memoryEngine.recordPlaybackInteraction(currentSong, 'skip');
+    }
+
+    const nextSong = playerEngine.next();
+    if (nextSong) {
+      setState({
+        currentSong: nextSong,
+        playbackState: 'playing',
+      });
+    }
     console.log('⏭️ Siguiente canción');
   }
 
@@ -126,8 +137,18 @@ export class HBGCore {
    * Anterior
    */
   previous(): void {
-    playerEngine.previous();
-    autoDJ.playPrevious();
+    const currentSong = getState().currentSong;
+    if (currentSong) {
+      memoryEngine.recordPlaybackInteraction(currentSong, 'replay');
+    }
+
+    const previousSong = playerEngine.previous();
+    if (previousSong) {
+      setState({
+        currentSong: previousSong,
+        playbackState: 'playing',
+      });
+    }
     console.log('⏮️ Canción anterior');
   }
 
@@ -167,6 +188,12 @@ export class HBGCore {
    */
   getNextRecommendation(): Song {
     const state = getState();
+    const catalogMatches = moodEngine.getCatalogRecommendations(state.currentMood, 1);
+
+    if (catalogMatches.length > 0) {
+      return catalogMatches[0];
+    }
+
     return aiEngine.recommendSong(state.currentMood, state.history);
   }
 

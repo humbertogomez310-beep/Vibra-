@@ -1,10 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { hbgCore } from '../core/hbgCore';
 import { getState, subscribe } from '../core/vibraState';
+import { eventBus } from '../core/eventBus';
+
+type AudioPresetKey = 'vibrant' | 'warm' | 'bass' | 'treble';
+
+const AUDIO_PRESETS: Record<AudioPresetKey, { label: string; description: string; gains: number[] }> = {
+  vibrant: { label: 'Vibrant', description: 'Bright and airy', gains: [70, 55, 40, 30, 20] },
+  warm: { label: 'Warm', description: 'Rounded and cozy', gains: [45, 60, 55, 35, 25] },
+  bass: { label: 'Bass', description: 'Deep low-end focus', gains: [30, 40, 60, 50, 45] },
+  treble: { label: 'Treble', description: 'Sharper highs and clarity', gains: [65, 50, 35, 55, 70] },
+};
 
 export const Player: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSong, setCurrentSong] = useState(getState().currentSong);
+  const [activePreset, setActivePreset] = useState<AudioPresetKey>('vibrant');
+  const [catalogVersion, setCatalogVersion] = useState(0);
 
   useEffect(() => {
     const unsubscribe = subscribe((state) => {
@@ -12,7 +24,19 @@ export const Player: React.FC = () => {
       setIsPlaying(state.playbackState === 'playing');
     });
 
-    return unsubscribe;
+    const handleCatalogRefresh = () => setCatalogVersion((value) => value + 1);
+    eventBus.on('library:tracks:hydrated', handleCatalogRefresh);
+    eventBus.on('library:tracks:added', handleCatalogRefresh);
+    eventBus.on('library:tracks:updated', handleCatalogRefresh);
+    eventBus.on('library:tracks:removed', handleCatalogRefresh);
+
+    return () => {
+      unsubscribe();
+      eventBus.off('library:tracks:hydrated', handleCatalogRefresh);
+      eventBus.off('library:tracks:added', handleCatalogRefresh);
+      eventBus.off('library:tracks:updated', handleCatalogRefresh);
+      eventBus.off('library:tracks:removed', handleCatalogRefresh);
+    };
   }, []);
 
   const handlePlay = () => {
@@ -29,6 +53,8 @@ export const Player: React.FC = () => {
   const handleNext = () => {
     hbgCore.next();
   };
+
+  const presetSummary = useMemo(() => AUDIO_PRESETS[activePreset], [activePreset]);
 
   return (
     <div className="player">
@@ -65,9 +91,47 @@ export const Player: React.FC = () => {
         </button>
       </div>
 
+      <div className="audio-preset-panel">
+        <div className="preset-header">
+          <span className="preset-title">🎛️ Equalizer</span>
+          <span className="preset-active">{presetSummary.label}</span>
+        </div>
+
+        <div className="preset-options">
+          {(Object.keys(AUDIO_PRESETS) as AudioPresetKey[]).map((presetKey) => {
+            const preset = AUDIO_PRESETS[presetKey];
+            const isActive = activePreset === presetKey;
+
+            return (
+              <button
+                key={presetKey}
+                className={`preset-chip ${isActive ? 'active' : ''}`}
+                onClick={() => setActivePreset(presetKey)}
+                title={`${preset.label}: ${preset.description}`}
+              >
+                <span>{preset.label}</span>
+                <small>{preset.description}</small>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="preset-bars" aria-label="Preset intensity preview">
+          {presetSummary.gains.map((gain, index) => (
+            <div key={`${activePreset}-${index}`} className="preset-bar-track">
+              <div className="preset-bar-fill" style={{ height: `${gain}%` }} />
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="player-progress">
         <div className="progress-bar">
           <div className="progress-fill"></div>
+        </div>
+        <div className="preset-status">
+          <span>Live catalog sync: {catalogVersion}</span>
+          <span>Preset ready: {presetSummary.label}</span>
         </div>
       </div>
     </div>
