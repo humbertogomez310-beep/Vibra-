@@ -17,7 +17,7 @@
 import { Mood, Song, VibraState, getState, setState, subscribe } from './vibraState';
 import { moodEngine } from './moodEngine';
 import { aiEngine } from './aiEngine';
-import { playerEngine } from './playerEngine';
+import { playerEngine, type EqualizerPreset } from './playerEngine';
 import { autoDJ } from './autodj';
 import { memoryEngine } from './memoryEngine';
 
@@ -160,6 +160,10 @@ export class HBGCore {
     playerEngine.setVolume(normalized);
     setState({ volume: normalized });
     memoryEngine.savePreferences({ volume: normalized });
+  }
+
+  setEqualizerPreset(preset: EqualizerPreset): void {
+    playerEngine.setEqualizerPreset(preset);
   }
 
   /**

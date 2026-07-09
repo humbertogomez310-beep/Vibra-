@@ -1,0 +1,17 @@
+{
+  "name": "VIBRA PRO",
+  "short_name": "VIBRA",
+  "description": "Mood-driven music experience powered by VIBRA PRO.",
+  "start_url": "/Vibra-/",
+  "display": "standalone",
+  "background_color": "#030712",
+  "theme_color": "#5b7dff",
+  "icons": [
+    {
+      "src": "/Vibra-/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

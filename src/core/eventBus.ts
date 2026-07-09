@@ -30,3 +30,17 @@ class EventBus {
 }
 
 export const eventBus = new EventBus();
+
+export function subscribeToCatalogEvents(callback: () => void): () => void {
+  const events = ['library:tracks:hydrated', 'library:tracks:added', 'library:tracks:updated', 'library:tracks:removed'];
+
+  events.forEach((event) => {
+    eventBus.on(event, callback);
+  });
+
+  return () => {
+    events.forEach((event) => {
+      eventBus.off(event, callback);
+    });
+  };
+}

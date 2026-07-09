@@ -23,7 +23,7 @@ The application uses a modular TypeScript stack centered around the HBG core orc
 - src/components/ — presentation layer for the live player, mood experience, and control center
 
 ## Development Status
-Release Candidate 2 (RC-2) is now in a stable, compiled state for production-style verification.
+Release Candidate 3 (RC-3) is now in a stable, compiled state for production-style verification.
 
 ## Verification
 Run the following commands locally:

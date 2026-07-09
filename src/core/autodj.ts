@@ -97,6 +97,14 @@ export class AutoDJ {
     return [...this.queue];
   }
 
+  getUpcomingSongs(limit: number = 4): Song[] {
+    return this.queue.slice(this.currentIndex, this.currentIndex + limit);
+  }
+
+  getRecommendedTrack(): Song | null {
+    return this.queue[this.currentIndex] ?? null;
+  }
+
   /**
    * Cambiar modo (mood)
    */

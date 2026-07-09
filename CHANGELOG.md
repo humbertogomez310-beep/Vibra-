@@ -1,5 +1,18 @@
 # Changelog
 
+## [v0.3.0-rc3] - 2026-07-09
+
+### Added
+- Full library experience inside the existing VIBRA panel with search, filters, playlists, smart playlists, favorites, and recent history.
+- Progressive web app readiness with manifest support and offline-capable build configuration using the existing Vite PWA plugin.
+
+### Changed
+- Refined player and mood-panel interactions while preserving the existing HBG orchestration architecture.
+- Polished responsive spacing, empty states, and cyberpunk UI consistency across the library experience.
+
+### Fixed
+- Stabilized catalog refresh behavior, playlist interactions, and UI state consistency across the release candidate flow.
+
 ## [v0.2.0-rc2] - 2026-07-08
 
 ### Added

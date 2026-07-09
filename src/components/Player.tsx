@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { hbgCore } from '../core/hbgCore';
 import { getState, subscribe } from '../core/vibraState';
-import { eventBus } from '../core/eventBus';
+import { subscribeToCatalogEvents } from '../core/eventBus';
 
 type AudioPresetKey = 'vibrant' | 'warm' | 'bass' | 'treble';
 
@@ -24,22 +24,15 @@ export const Player: React.FC = () => {
       setIsPlaying(state.playbackState === 'playing');
     });
 
-    const handleCatalogRefresh = () => setCatalogVersion((value) => value + 1);
-    eventBus.on('library:tracks:hydrated', handleCatalogRefresh);
-    eventBus.on('library:tracks:added', handleCatalogRefresh);
-    eventBus.on('library:tracks:updated', handleCatalogRefresh);
-    eventBus.on('library:tracks:removed', handleCatalogRefresh);
+    const unsubscribeCatalog = subscribeToCatalogEvents(() => setCatalogVersion((value) => value + 1));
 
     return () => {
       unsubscribe();
-      eventBus.off('library:tracks:hydrated', handleCatalogRefresh);
-      eventBus.off('library:tracks:added', handleCatalogRefresh);
-      eventBus.off('library:tracks:updated', handleCatalogRefresh);
-      eventBus.off('library:tracks:removed', handleCatalogRefresh);
+      unsubscribeCatalog();
     };
   }, []);
 
-  const handlePlay = () => {
+  const handlePlay = useCallback(() => {
     if (isPlaying) {
       hbgCore.pause();
     } else if (currentSong) {
@@ -48,13 +41,23 @@ export const Player: React.FC = () => {
       const song = hbgCore.getNextRecommendation();
       hbgCore.play(song);
     }
-  };
+  }, [currentSong, isPlaying]);
 
-  const handleNext = () => {
+  const handlePause = useCallback(() => {
+    hbgCore.pause();
+  }, []);
+
+  const handleNext = useCallback(() => {
     hbgCore.next();
-  };
+  }, []);
 
   const presetSummary = useMemo(() => AUDIO_PRESETS[activePreset], [activePreset]);
+  const presetOptions = useMemo(() => Object.entries(AUDIO_PRESETS) as Array<[AudioPresetKey, (typeof AUDIO_PRESETS)[AudioPresetKey]]>, []);
+
+  const handlePresetChange = useCallback((presetKey: AudioPresetKey) => {
+    setActivePreset(presetKey);
+    hbgCore.setEqualizerPreset(presetKey);
+  }, []);
 
   return (
     <div className="player">
@@ -98,15 +101,14 @@ export const Player: React.FC = () => {
         </div>
 
         <div className="preset-options">
-          {(Object.keys(AUDIO_PRESETS) as AudioPresetKey[]).map((presetKey) => {
-            const preset = AUDIO_PRESETS[presetKey];
+          {presetOptions.map(([presetKey, preset]) => {
             const isActive = activePreset === presetKey;
 
             return (
               <button
                 key={presetKey}
                 className={`preset-chip ${isActive ? 'active' : ''}`}
-                onClick={() => setActivePreset(presetKey)}
+                onClick={() => handlePresetChange(presetKey)}
                 title={`${preset.label}: ${preset.description}`}
               >
                 <span>{preset.label}</span>
