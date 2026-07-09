@@ -43,10 +43,6 @@ export const Player: React.FC = () => {
     }
   }, [currentSong, isPlaying]);
 
-  const handlePause = useCallback(() => {
-    hbgCore.pause();
-  }, []);
-
   const handleNext = useCallback(() => {
     hbgCore.next();
   }, []);
