@@ -1,0 +1,69 @@
+import { useEffect, useState, useRef } from "react";
+import { HBGCore } from "./core/HBGCore";
+import type { MoodType } from "./mood/MoodEngine";
+
+function App() {
+  const hbgCoreRef = useRef<HBGCore | null>(null);
+  if (!hbgCoreRef.current) hbgCoreRef.current = new HBGCore();
+  const core = hbgCoreRef.current;
+
+  const [frequencies, setFrequencies] = useState<number[]>(Array(32).fill(0));
+  const [systemAlert, setSystemAlert] = useState<string>("SYSTEM CORE V2 ACTIVE");
+  const [interactions, setInteractions] = useState<number>(core.getInteractionCount());
+  const [currentMood, setCurrentMood] = useState<MoodType>(core.getMood());
+  const [volume, setVolume] = useState<number>(core.getVolume());
+  const [trackTitle, setTrackTitle] = useState<string>(core.getCurrentTrack().title);
+  const animationRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    core.player.load(core.getCurrentTrack().url);
+    const updateVisuals = () => {
+      setFrequencies(Array.from(core.getFrequencies()));
+      animationRef.current = requestAnimationFrame(updateVisuals);
+    };
+    animationRef.current = requestAnimationFrame(updateVisuals);
+    return () => { if (animationRef.current) cancelAnimationFrame(animationRef.current); };
+  }, [core]);
+
+  const handlePlay = () => { core.play(); sync("ENGINE PLAYING"); };
+  const handleStop = () => { core.stop(); sync("ENGINE HALTED"); };
+  const handleNext = () => { setTrackTitle(core.nextTrack().title); sync("TRACK SKIPPED"); };
+  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVol = parseFloat(e.target.value);
+    core.setVolume(newVol); setVolume(core.getVolume()); setInteractions(core.getInteractionCount());
+  };
+  const sync = (msg: string) => {
+    setInteractions(core.getInteractionCount()); setCurrentMood(core.getMood()); setSystemAlert(msg);
+  };
+  const getBg = () => {
+    if (currentMood === "energy") return "#1f0033";
+    if (currentMood === "focus") return "#0a1414";
+    return "#0d0d1a";
+  };
+  return (
+    <div style={{ backgroundColor: getBg(), color: "#00ffcc", height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", fontFamily: "monospace", overflow: "hidden", transition: "background-color 0.5s" }}>
+      <h2>🎧 VIBRA PRO</h2>
+      <p style={{ color: "#ff007f", fontWeight: "bold" }}>⚡ STATUS: {systemAlert}</p>
+      <div style={{ color: "#ffff00", fontWeight: "bold", marginBottom: "15px" }}>📻 STATION: {trackTitle}</div>
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px", fontSize: "0.85rem" }}>
+        <span style={{ border: "1px dashed #00ffcc", padding: "4px 8px" }}>💾 LOGS: {interactions}</span>
+        <span style={{ border: "1px dashed #ff007f", padding: "4px 8px" }}>🎭 MOOD: {currentMood.toUpperCase()}</span>
+      </div>
+      <div style={{ marginBottom: "20px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        <label>🎛️ GAIN: {Math.round(volume * 100)}%</label>
+        <input type="range" min="0" max="1" step="0.01" value={volume} onChange={handleVolumeChange} style={{ accentColor: "#00ffcc", width: "180px" }} />
+      </div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: "4px", height: "100px", width: "260px", marginBottom: "30px", borderBottom: "2px solid #ff007f" }}>
+        {frequencies.map((val, idx) => (
+          <div key={idx} style={{ backgroundColor: currentMood === "energy" ? "#ff007f" : "#00ffcc", width: "5px", height: `${(val / 255) * 100}px`, transition: "height 0.05s ease" }} />
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: "10px" }}>
+        <button onClick={handlePlay} style={{ background: "transparent", border: "2px solid #00ffcc", color: "#00ffcc", padding: "10px 15px", cursor: "pointer", fontWeight: "bold" }}>PLAY</button>
+        <button onClick={handleNext} style={{ background: "transparent", border: "2px solid #ffff00", color: "#ffff00", padding: "10px 15px", cursor: "pointer", fontWeight: "bold" }}>NEXT ➡️</button>
+        <button onClick={handleStop} style={{ background: "transparent", border: "2px solid #ff007f", color: "#ff007f", padding: "10px 15px", cursor: "pointer", fontWeight: "bold" }}>HALT</button>
+      </div>
+    </div>
+  );
+}
+export default App;
