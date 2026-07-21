@@ -1,0 +1,35 @@
+
+# Security Policy
+
+## Supported Versions
+
+The following versions of this project are currently supported with security updates.
+
+| Version | Supported |
+| ------- | --------- |
+| 1.x.x   | ✅ Yes     |
+| < 1.0   | ❌ No      |
+
+## Reporting a Vulnerability
+
+If you discover a security vulnerability, please report it responsibly.
+
+### How to Report
+
+* Open a private issue or contact the project maintainer directly.
+* Include a clear description of the vulnerability.
+* Provide steps to reproduce the issue if possible.
+* Avoid publicly disclosing the vulnerability before it has been reviewed.
+
+### Response Process
+
+* Initial acknowledgment: within 7 days.
+* Vulnerabilities will be investigated and validated.
+* If confirmed, a fix will be developed and released as soon as possible.
+* If the report is declined, an explanation will be provided.
+
+### Responsible Disclosure
+
+Please do not publicly disclose security issues until a fix has been made available. Responsible disclosure helps protect all users of the project.
+
+Thank you for helping improve the security and reliability of this project.

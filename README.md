@@ -1,73 +1,34 @@
-# React + TypeScript + Vite
+# VIBRA PRO
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+VIBRA PRO is the AI music experience inside the Universo HBG, designed as a high-performance, offline-ready sound system that reacts to mood, catalog state, and playback behavior in real time.
 
-Currently, two official plugins are available:
+## Project Definition
+VIBRA PRO is an intelligent audio experience that blends a reactive local music catalog, an adaptive AutoDJ engine, and a live mood-driven interface. The system is built for immersive, low-latency interaction with strong TypeScript architecture and graceful offline fallbacks.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Core Features
+- Audio PRO controls with equalizer-style presets for vibrant, warm, bass, and treble listening profiles.
+- Reactive indexing catalog that updates instantly when local tracks are hydrated, added, updated, or removed.
+- AutoDJ 2.0 predictive queue replenishment based on active mood, tempo, and playback frequency.
+- Live Mood Panel that reflects the current emotional state and previews upcoming predictive tracks.
+- Persistent memory layer for playback interactions and user preferences.
 
-## React Compiler
+## Architecture
+The application uses a modular TypeScript stack centered around the HBG core orchestration layer:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- src/core/hbgCore.ts — primary orchestration layer for state, playback, and intelligence
+- src/core/moodEngine.ts — mood-driven recommendations and tempo-aware selection
+- src/core/autodj.ts — predictive queue management and intelligent refill logic
+- src/core/musicCatalog.ts — reactive in-memory catalog indexing and smart playlist matching
+- src/core/memoryEngine.ts — local persistence for preferences, history, and playback feedback
+- src/components/ — presentation layer for the live player, mood experience, and control center
 
-## Expanding the ESLint configuration
+## Development Status
+Release Candidate 3 (RC-3) is now in a stable, compiled state for production-style verification.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Verification
+Run the following commands locally:
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run typecheck
+npm run build
 ```

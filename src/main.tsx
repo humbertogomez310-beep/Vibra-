@@ -1,10 +1,25 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import './index.css'
-import App from './App.tsx'
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { registerSW } from 'virtual:pwa-register';
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+import App from './App';
+
+// Inicializar HBG Core
+import { hbgCore } from './core/hbgCore';
+
+// Registrar automáticamente el Service Worker de la PWA
+registerSW({
+  immediate: true,
+});
+
+// Inicializar app
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
     <App />
-  </StrictMode>,
-)
+  </React.StrictMode>,
+);
+
+// Log de inicialización
+console.log('🎵 VIBRA PRO inicializado correctamente');
+console.log(`Modo: ${hbgCore.getMode()}`);
+console.log('Estado global:', hbgCore.getState());
